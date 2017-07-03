@@ -23,6 +23,7 @@
 import UIKit
 import MapKit
 import CoreLocation
+import RealmSwift
 
 
 class MapViewController: UIViewController {
@@ -64,6 +65,7 @@ class MapViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    print(Realm.Configuration.defaultConfiguration.fileURL as Any)
     
     title = "Map"
     

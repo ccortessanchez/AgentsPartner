@@ -27,10 +27,12 @@ import RealmSwift
 class CategoriesTableViewController: UITableViewController {
   
     let realm = try! Realm()
-    lazy var categories: Results<Category> = {self.realm.objects(Category)}()
+    lazy var categories: Results<Category> = {self.realm.objects(Category.self)}()
+    var selectedCategory: Category!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        populateDefaultCategories()
     }
   
     override var preferredStatusBarStyle : UIStatusBarStyle {
@@ -40,7 +42,7 @@ class CategoriesTableViewController: UITableViewController {
     func populateDefaultCategories() {
         if categories.count == 0 {
             try! realm.write {
-                let defaultCategories = ["Birds","Mammals","Reptiles","Arachnids"]
+                let defaultCategories = ["Birds","Mammals","Flora","Reptiles","Arachnids"]
                 for category in defaultCategories {
                     let newCategory = Category()
                     newCategory.name = category
@@ -48,7 +50,7 @@ class CategoriesTableViewController: UITableViewController {
                 }
             }
             
-            categories = realm.objects(Category)
+            categories = realm.objects(Category.self)
         }
     }
 }
@@ -66,11 +68,14 @@ class CategoriesTableViewController: UITableViewController {
   
         override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+            let category = categories[indexPath.row]
+            cell.textLabel?.text = category.name
     
             return cell
         }
     
         override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath {
+            selectedCategory = categories[indexPath.row]
             return indexPath
         }
 }
