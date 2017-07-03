@@ -21,52 +21,87 @@
 */
 
 import UIKit
+import RealmSwift
 
 
 class AddNewEntryController: UIViewController {
   
-  @IBOutlet weak var categoryTextField: UITextField!
-  @IBOutlet weak var nameTextField: UITextField!
-  @IBOutlet weak var descriptionTextField: UITextView!
+    @IBOutlet weak var categoryTextField: UITextField!
+    @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var descriptionTextField: UITextView!
   
-  var selectedAnnotation: SpecimenAnnotation!
+    var selectedAnnotation: SpecimenAnnotation!
+    var selectedCategory: Category!
+    var specimen: Specimen!
   
-  //MARK: - Validation
+    //MARK: - Validation
   
-  func validateFields() -> Bool {
+    func validateFields() -> Bool {
     
-    if nameTextField.text!.isEmpty || descriptionTextField.text!.isEmpty {
-      let alertController = UIAlertController(title: "Validation Error", message: "All fields must be filled", preferredStyle: .alert)
-      let alertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.destructive) { alert in
-        alertController.dismiss(animated: true, completion: nil)
-      }
-      alertController.addAction(alertAction)
-      present(alertController, animated: true, completion: nil)
+        if nameTextField.text!.isEmpty || descriptionTextField.text!.isEmpty || selectedCategory == nil {
+            let alertController = UIAlertController(title: "Validation Error", message: "All fields must be filled", preferredStyle: .alert)
+            let alertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.destructive) { alert in
+                alertController.dismiss(animated: true, completion: nil)
+            }
+            alertController.addAction(alertAction)
+            present(alertController, animated: true, completion: nil)
       
-      return false
+            return false
       
-    } else {
-      return true
+        } else {
+            return true
+        }
+  }
+  
+    //MARK: - View Lifecycle
+  
+    override func viewDidLoad() {
+        super.viewDidLoad()
     }
-  }
   
-  //MARK: - View Lifecycle
+    //MARK: - Actions
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-  }
-  
-  //MARK: - Actions
-  
-  @IBAction func unwindFromCategories(_ segue: UIStoryboardSegue) {    
-  }
+    @IBAction func unwindFromCategories(_ segue: UIStoryboardSegue) {
+        if segue.identifier == "CategorySelectedSegue" {
+            let categoriesController = segue.source as! CategoriesTableViewController
+            selectedCategory = categoriesController.selectedCategory
+            categoryTextField.text = selectedCategory.name
+        }
+    }
+    
+    //MARK: - Helper functions
+    
+    func addNewSpecimen() {
+        let realm = try! Realm()
+        try! realm.write {
+            let newSpecimen = Specimen()
+            newSpecimen.name = self.nameTextField.text!
+            newSpecimen.category = self.selectedCategory
+            newSpecimen.specimeDescription = self.descriptionTextField.text
+            newSpecimen.latitude = self.selectedAnnotation.coordinate.latitude
+            newSpecimen.longitude = self.selectedAnnotation.coordinate.longitude
+            
+            realm.add(newSpecimen)
+            self.specimen = newSpecimen
+        }
+    }
+    
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if validateFields() {
+            addNewSpecimen()
+            return true
+        } else {
+            return false
+        }
+    }
 }
 
 //MARK: - UITextFieldDelegate
 extension AddNewEntryController: UITextFieldDelegate {
   
-  func textFieldDidBeginEditing(_ textField: UITextField) {
-    performSegue(withIdentifier: "Categories", sender: self)
-  }
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        performSegue(withIdentifier: "Categories", sender: self)
+    }
 }
 
