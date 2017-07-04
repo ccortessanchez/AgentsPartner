@@ -26,8 +26,8 @@ import RealmSwift
 
 class LogViewController: UITableViewController {
   
-  var specimens = try! Realm().objects(Specimen).sorted(byKeyPath: "name", ascending: true)
-  var searchResults = try! Realm().objects(Specimen)
+  var specimens = try! Realm().objects(Specimen.self).sorted(byKeyPath: "name", ascending: true)
+  var searchResults = try! Realm().objects(Specimen.self)
   
   @IBOutlet weak var segmentedControl: UISegmentedControl!
   
@@ -67,11 +67,11 @@ class LogViewController: UITableViewController {
     
     switch scopeBar.selectedSegmentIndex {
     case 0:
-        specimens = realm.objects(Specimen).sorted(byKeyPath: "name", ascending: true)
+        specimens = realm.objects(Specimen.self).sorted(byKeyPath: "name", ascending: true)
     case 1:
-        specimens = realm.objects(Specimen).sorted(byKeyPath: "created", ascending: true)
+        specimens = realm.objects(Specimen.self).sorted(byKeyPath: "created", ascending: true)
     default:
-        specimens = realm.objects(Specimen).sorted(byKeyPath: "name", ascending: true)
+        specimens = realm.objects(Specimen.self).sorted(byKeyPath: "name", ascending: true)
     }
     
     tableView.reloadData()
@@ -158,11 +158,11 @@ extension LogViewController {
         
         switch scopeIndex {
         case 0:
-            searchResults = realm.objects(Specimen).filter(predicate).sorted(byKeyPath: "name", ascending: true)
+            searchResults = realm.objects(Specimen.self).filter(predicate).sorted(byKeyPath: "name", ascending: true)
         case 1:
-            searchResults = realm.objects(Specimen).filter(predicate).sorted(byKeyPath: "created", ascending: true)
+            searchResults = realm.objects(Specimen.self).filter(predicate).sorted(byKeyPath: "created", ascending: true)
         default:
-            searchResults = realm.objects(Specimen).filter(predicate)
+            searchResults = realm.objects(Specimen.self).filter(predicate)
         }
     }
   
