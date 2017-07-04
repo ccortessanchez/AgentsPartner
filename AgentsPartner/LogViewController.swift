@@ -27,7 +27,7 @@ import RealmSwift
 class LogViewController: UITableViewController {
   
   var specimens = try! Realm().objects(Specimen).sorted(byKeyPath: "name", ascending: true)
-  var searchResults = ["search1"]
+  var searchResults = try! Realm().objects(Specimen)
   
   @IBOutlet weak var segmentedControl: UISegmentedControl!
   
@@ -62,6 +62,19 @@ class LogViewController: UITableViewController {
   //MARK: - Actions & Segues
   
   @IBAction func scopeChanged(_ sender: AnyObject) {
+    let scopeBar = sender as! UISegmentedControl
+    let realm = try! Realm()
+    
+    switch scopeBar.selectedSegmentIndex {
+    case 0:
+        specimens = realm.objects(Specimen).sorted(byKeyPath: "name", ascending: true)
+    case 1:
+        specimens = realm.objects(Specimen).sorted(byKeyPath: "created", ascending: true)
+    default:
+        specimens = realm.objects(Specimen).sorted(byKeyPath: "name", ascending: true)
+    }
+    
+    tableView.reloadData()
   }
 }
 
@@ -69,6 +82,8 @@ class LogViewController: UITableViewController {
 extension LogViewController: UISearchResultsUpdating {
   
   func updateSearchResults(for searchController: UISearchController) {
+    let searchString = searchController.searchBar.text!
+    filterResultsWithSearchString(searchString: searchString)
     let searchResultsController = searchController.searchResultsController as! UITableViewController
     searchResultsController.tableView.reloadData()
   }
@@ -93,8 +108,9 @@ extension LogViewController {
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = self.tableView.dequeueReusableCell(withIdentifier: "LogCell") as! LogCell
-    let specimen = specimens[indexPath.row]
-    
+    //let specimen = specimens[indexPath.row]
+    let specimen = searchController.isActive ? searchResults[indexPath.row]: specimens[indexPath.row]
+        
     cell.titleLabel.text = specimen.name
     cell.subtitleLabel.text = specimen.category.name
     
@@ -117,6 +133,21 @@ extension LogViewController {
     
     return cell
   }
+    
+    func filterResultsWithSearchString(searchString: String) {
+        let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
+        let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
+        let realm = try! Realm()
+        
+        switch scopeIndex {
+        case 0:
+            searchResults = realm.objects(Specimen).filter(predicate).sorted(byKeyPath: "name", ascending: true)
+        case 1:
+            searchResults = realm.objects(Specimen).filter(predicate).sorted(byKeyPath: "created", ascending: true)
+        default:
+            searchResults = realm.objects(Specimen).filter(predicate)
+        }
+    }
   
 }
 
