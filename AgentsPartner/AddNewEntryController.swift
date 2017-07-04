@@ -57,6 +57,12 @@ class AddNewEntryController: UIViewController {
   
     override func viewDidLoad() {
         super.viewDidLoad()
+        if let specimen = specimen {
+            title = "Edit \(specimen.name)"
+            fillTextFields()
+        } else {
+            title = "Add New Specimen"
+        }
     }
   
     //MARK: - Actions
@@ -86,10 +92,31 @@ class AddNewEntryController: UIViewController {
         }
     }
     
+    func fillTextFields() {
+        nameTextField.text = specimen.name
+        categoryTextField.text = specimen.category.name
+        descriptionTextField.text = specimen.specimeDescription
+        
+        selectedCategory = specimen.category
+    }
+    
+    func updateSpecimen() {
+        let realm = try! Realm()
+        try! realm.write {
+            self.specimen.name = self.nameTextField.text!
+            self.specimen.category = self.selectedCategory
+            self.specimen.specimeDescription = self.descriptionTextField.text!
+        }
+    }
+    
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if validateFields() {
-            addNewSpecimen()
+            if specimen != nil {
+                updateSpecimen()
+            } else {
+                addNewSpecimen()
+            }
             return true
         } else {
             return false
